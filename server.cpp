@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int read_from_client(int);
+string read_from_client(int);
 
 int main(int argc, char* argv[]){
 
@@ -57,7 +57,9 @@ int main(int argc, char* argv[]){
       haddrp = inet_ntoa(clientaddr.sin_addr);
       printf("server connected to %s (%s)\n", hp->h_name, haddrp);
 
-      read_from_client(connfd);
+      string client_message;
+      client_message = read_from_client(connfd);
+      cout << client_message << endl;
 
       Close(connfd);
     }
@@ -66,7 +68,7 @@ int main(int argc, char* argv[]){
 
 }
 
-int read_from_client(int connfd){
+string read_from_client(int connfd){
 
   size_t n;
   char buf[MAXLINE];
@@ -78,6 +80,6 @@ int read_from_client(int connfd){
     Rio_writen(connfd, buf, n);
   }
 
-  return 0;
+  return buf;
 
 }
