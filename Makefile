@@ -1,5 +1,5 @@
 CFLAGS = -Wall
-CPPFLAGS = -Wall
+CPPFLAGS = -Wall -g
 
 all: server mcput mcget mcdel mclist
 
@@ -11,10 +11,10 @@ csapp.c:
 
 csapp.o: csapp.h csapp.c
 
-server: server.cpp csapp.o 
+server: server.cpp csapp.o
 	g++ $(CPPFLAGS) server.cpp csapp.o -lpthread -o server
 
-mcput: mcput.cpp csapp.o 
+mcput: mcput.cpp csapp.o
 	g++ $(CPPFLAGS) mcput.cpp csapp.o -lpthread -o mcput
 
 mcget: mcget.cpp csapp.o
