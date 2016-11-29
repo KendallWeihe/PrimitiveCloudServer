@@ -1,6 +1,6 @@
-// extern "C" {
+extern "C" {
     #include "csapp.h"
-// }
+}
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
@@ -31,10 +31,11 @@ int main(int argc, char* argv[]){
   Rio_readinitb(&rio, clientfd);
 
   Rio_writen(clientfd, protocol_buf, strlen(buf));
-  Rio_readnb(&rio, buf, MAXLINE);
-  Fputs(buf, stdout);
 
-  cout << buf << endl;
+  // Rio_readnb(&rio, buf, MAXLINE);
+  // Fputs(buf, stdout);
+  //
+  // cout << buf << endl;
   Close(clientfd); //line:netp:echoclient:close
   exit(0);
 }
@@ -52,4 +53,13 @@ void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, un
   for (int i = 8; i < filename.length()+8; i++){
     protocol_buf[i] = filename[i-8];
   }
+
+  // for (int i = filename.length()+8; i < 88; i++){
+    // protocol_buf[i] = '\n';
+  // }
+
+  for (int i = 0; i < 80; i++){
+    cout << protocol_buf[i];
+  }
+
 }

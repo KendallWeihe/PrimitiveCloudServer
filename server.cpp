@@ -1,13 +1,13 @@
-// extern "C" {
+extern "C" {
     #include "csapp.h"
-// }
+}
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
 
 using namespace std;
 
-unsigned int parse_header(string client_message);
+unsigned int parse_header(char client_message[]);
 void get(rio_t rio);
 
 int main(int argc, char* argv[]){
@@ -40,6 +40,9 @@ int main(int argc, char* argv[]){
     //       Rio_writen() --> command not recognized
     //   Close()
 
+    unsigned int test = 1234567891;
+    cout << test << endl;
+
     int listenfd, connfd, port;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
@@ -63,19 +66,18 @@ int main(int argc, char* argv[]){
       printf("server connected to %s (%s)\n", hp->h_name, haddrp);
 
       size_t n;
-      char buf[MAXLINE];
+      char buf[MAXLINE] = {0};
       rio_t rio;
       Rio_readinitb(&rio, connfd);
 
-      // while ((n = Rio_readn(connfd, buf, 4)) != 0){
-      //   cout << buf << endl;
-      // }
-      //
       n = Rio_readnb(&rio, buf, 4);
       unsigned int secret_key = parse_header(buf);
       cout << "Secret key = " << secret_key << endl;
 
       n = Rio_readnb(&rio, buf, 4);
+      // for (int i = 0; i < 20; i++){
+      //   cout << buf[i];
+      // }
       unsigned int type = parse_header(buf);
       cout << "Type = " << type << endl;
 
@@ -93,8 +95,15 @@ int main(int argc, char* argv[]){
 
 }
 
-unsigned int parse_header(string client_message){
-  unsigned int header = (client_message[3] << 24) | (client_message[2] << 16) | (client_message[1] << 8) | client_message[0];
+unsigned int parse_header(char client_message[]){
+  unsigned int byte1, byte2, byte3, byte4;
+  byte1 = (unsigned char)client_message[3] << 24;
+  byte2 = (unsigned char)client_message[2] << 16;
+  byte3 = (unsigned char)client_message[1] << 8;
+  byte4 = (unsigned char)client_message[0];
+  cout << byte1 << ",  " << byte2 << ",  " << byte3 << ",  " << byte4 << endl;
+
+  unsigned int header = byte1 | byte2 | byte3 | byte4;
   return header;
 }
 
@@ -111,4 +120,6 @@ void get(rio_t rio){
     filename += buf[i];
   }
   cout << "Filename = " << filename << endl;
+  // TODO
+    // next open the file and write it back
 }
