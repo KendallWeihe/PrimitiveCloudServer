@@ -40,9 +40,6 @@ int main(int argc, char* argv[]){
     //       Rio_writen() --> command not recognized
     //   Close()
 
-    unsigned int test = 1234567891;
-    cout << test << endl;
-
     int listenfd, connfd, port;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
@@ -73,13 +70,13 @@ int main(int argc, char* argv[]){
       n = Rio_readnb(&rio, buf, 4);
       unsigned int secret_key = parse_header(buf);
       cout << "Secret key = " << secret_key << endl;
+      cout << "BUF 1 = " << buf << endl;
 
+      rio.rio_cnt = 4;
       n = Rio_readnb(&rio, buf, 4);
-      // for (int i = 0; i < 20; i++){
-      //   cout << buf[i];
-      // }
       unsigned int type = parse_header(buf);
       cout << "Type = " << type << endl;
+      cout << "BUF 2 = " << buf << endl;
 
       switch(type){
         case 0: get(rio); break;
@@ -101,7 +98,7 @@ unsigned int parse_header(char client_message[]){
   byte2 = (unsigned char)client_message[2] << 16;
   byte3 = (unsigned char)client_message[1] << 8;
   byte4 = (unsigned char)client_message[0];
-  cout << byte1 << ",  " << byte2 << ",  " << byte3 << ",  " << byte4 << endl;
+  // cout << byte1 << ",  " << byte2 << ",  " << byte3 << ",  " << byte4 << endl;
 
   unsigned int header = byte1 | byte2 | byte3 | byte4;
   return header;
@@ -111,14 +108,22 @@ void get(rio_t rio){
   char buf[80];
   size_t n;
   n = Rio_readnb(&rio, buf, 80);
-  string filename = "";
+
   for (int i = 0; i < 80; i++){
-    // if (buf[i] == '\0'){
-    //   break;
-    // }
-    cout << buf[i];
-    filename += buf[i];
+    cout << "Buf = " << buf[i] << endl;
   }
+
+  char filename[80];
+  int count = 0;
+  for (int i = 0; i < 80; i++){
+    if (buf[i] == '\0'){
+      break;
+    }
+    cout << "Buf = " << buf[i] << endl;
+    filename[i] = buf[i];
+    count += 1;
+  }
+  cout << count;
   cout << "Filename = " << filename << endl;
   // TODO
     // next open the file and write it back

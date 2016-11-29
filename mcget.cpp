@@ -27,6 +27,10 @@ int main(int argc, char* argv[]){
   char protocol_buf[80] = {0};
   convert_to_protocol_format(protocol_buf, secret_key, type, filename);
 
+  for (int i = 0; i < 87; i++){
+    cout << "protocol_buf = " << protocol_buf[i] << endl;
+  }
+
   clientfd = Open_clientfd(host, port);
   Rio_readinitb(&rio, clientfd);
 
@@ -52,14 +56,6 @@ void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, un
 
   for (int i = 8; i < filename.length()+8; i++){
     protocol_buf[i] = filename[i-8];
-  }
-
-  // for (int i = filename.length()+8; i < 88; i++){
-    // protocol_buf[i] = '\n';
-  // }
-
-  for (int i = 0; i < 80; i++){
-    cout << protocol_buf[i];
   }
 
 }
