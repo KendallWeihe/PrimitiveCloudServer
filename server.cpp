@@ -70,14 +70,17 @@ int main(int argc, char* argv[]){
       n = Rio_readnb(&rio, buf, 4);
       unsigned int secret_key = parse_header(buf);
       cout << "Secret key = " << secret_key << endl;
-      cout << "BUF 1 = " << buf << endl;
+
+      // for (int i = 0; i < 20; i++){
+      //   cout << "rio buf = " << rio.rio_buf[i] << endl;
+      // }
 
       rio.rio_cnt = 4;
       n = Rio_readnb(&rio, buf, 4);
       unsigned int type = parse_header(buf);
       cout << "Type = " << type << endl;
-      cout << "BUF 2 = " << buf << endl;
 
+      rio.rio_cnt = 8;
       switch(type){
         case 0: get(rio); break;
         case 1: break;
@@ -109,16 +112,13 @@ void get(rio_t rio){
   size_t n;
   n = Rio_readnb(&rio, buf, 80);
   char filename[80];
-  int count = 0;
   for (int i = 0; i < 80; i++){
     if (buf[i] == '\0'){
       break;
     }
     cout << "Buf = " << buf[i] << endl;
     filename[i] = buf[i];
-    count += 1;
   }
-  cout << count;
   cout << "Filename = " << filename << endl;
   // TODO
     // next open the file and write it back
