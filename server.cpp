@@ -108,11 +108,6 @@ void get(rio_t rio){
   char buf[80];
   size_t n;
   n = Rio_readnb(&rio, buf, 80);
-
-  for (int i = 0; i < 80; i++){
-    cout << "Buf = " << buf[i] << endl;
-  }
-
   char filename[80];
   int count = 0;
   for (int i = 0; i < 80; i++){
