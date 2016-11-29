@@ -1,4 +1,6 @@
-#include "csapp.h"
+extern "C" {
+    #include "csapp.h"
+}
 #include <iostream>
 
 using namespace std;

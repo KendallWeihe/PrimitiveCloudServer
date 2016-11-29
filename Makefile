@@ -10,7 +10,7 @@ csapp.c:
 	wget http://csapp.cs.cmu.edu/2e/ics2/code/src/csapp.c
 
 csapp.o: csapp.h csapp.c
-	g++ $(CPPFLAGS) -c csapp.c
+	gcc $(CPPFLAGS) -c csapp.c
 
 server: server.cpp csapp.o
 	g++ $(CPPFLAGS) server.cpp csapp.o -lpthread -o server

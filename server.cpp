@@ -1,9 +1,14 @@
-#include "csapp.h"
+// extern "C" {
+    #include "csapp.h"
+// }
 #include <iostream>
+#include <string>
+#include <netinet/in.h>
 
 using namespace std;
 
-string read_from_client(int);
+unsigned int parse_header(string client_message);
+void get(rio_t rio);
 
 int main(int argc, char* argv[]){
 
@@ -57,9 +62,29 @@ int main(int argc, char* argv[]){
       haddrp = inet_ntoa(clientaddr.sin_addr);
       printf("server connected to %s (%s)\n", hp->h_name, haddrp);
 
-      string client_message;
-      client_message = read_from_client(connfd);
-      cout << client_message << endl;
+      size_t n;
+      char buf[MAXLINE];
+      rio_t rio;
+      Rio_readinitb(&rio, connfd);
+
+      // while ((n = Rio_readn(connfd, buf, 4)) != 0){
+      //   cout << buf << endl;
+      // }
+      //
+      n = Rio_readnb(&rio, buf, 4);
+      unsigned int secret_key = parse_header(buf);
+      cout << "Secret key = " << secret_key << endl;
+
+      n = Rio_readnb(&rio, buf, 4);
+      unsigned int type = parse_header(buf);
+      cout << "Type = " << type << endl;
+
+      switch(type){
+        case 0: get(rio); break;
+        case 1: break;
+        case 2: break;
+        case 3: break;
+      }
 
       Close(connfd);
     }
@@ -68,16 +93,22 @@ int main(int argc, char* argv[]){
 
 }
 
-string read_from_client(int connfd){
+unsigned int parse_header(string client_message){
+  unsigned int header = (client_message[3] << 24) | (client_message[2] << 16) | (client_message[1] << 8) | client_message[0];
+  return header;
+}
 
+void get(rio_t rio){
+  char buf[80];
   size_t n;
-  char buf[MAXLINE];
-  rio_t rio;
-
-  Rio_readinitb(&rio, connfd);
-  n = Rio_readlineb(&rio, buf, MAXLINE);
-  if (n >= 0){
-    return buf;    
+  n = Rio_readnb(&rio, buf, 80);
+  string filename = "";
+  for (int i = 0; i < 80; i++){
+    // if (buf[i] == '\0'){
+    //   break;
+    // }
+    cout << buf[i];
+    filename += buf[i];
   }
-
+  cout << "Filename = " << filename << endl;
 }
