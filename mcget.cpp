@@ -79,10 +79,10 @@ unsigned int parse_error(char buf[]){
 }
 
 unsigned int parse_num_bytes(char buf[]){
-  char byte_1 = buf[7];
-  char byte_2 = buf[6];
-  char byte_3 = buf[5];
-  char byte_4 = buf[4];
+  unsigned char byte_1 = buf[7];
+  unsigned char byte_2 = buf[6];
+  unsigned char byte_3 = buf[5];
+  unsigned char byte_4 = buf[4];
 
   unsigned int a = (unsigned int)byte_1 << 24;
   unsigned int b = (unsigned int)byte_2 << 16;
