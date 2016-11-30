@@ -11,6 +11,7 @@ using namespace std;
 
 unsigned int parse_header(char client_message[]);
 void get(char buf[], int connfd);
+void parse_filename(char buf[], char filename[]);
 
 int main(int argc, char* argv[]){
 
@@ -47,8 +48,8 @@ int main(int argc, char* argv[]){
     struct sockaddr_in clientaddr;
     struct hostent *hp;
     char *haddrp;
-    if (argc != 2) {
-    	fprintf(stderr, "usage: %s <port>\n", argv[0]);
+    if (argc != 3) {
+    	fprintf(stderr, "usage: %s <port> <key>\n", argv[0]);
     	exit(0);
     }
     port = atoi(argv[1]);
@@ -71,9 +72,9 @@ int main(int argc, char* argv[]){
 
       n = Rio_readnb(&rio, buf, MAXLINE);
 
-      char key_char_array[4];
+      char secret_key_char_array[4];
       for (int i = 0; i < 4; i++){
-        key_char_array[i] = buf[i];
+        secret_key_char_array[i] = buf[i];
       }
 
       char type_char_array[4];
@@ -81,17 +82,22 @@ int main(int argc, char* argv[]){
         type_char_array[i] = buf[4+i];
       }
 
-      unsigned int key = parse_header(key_char_array);
-      unsigned int type = parse_header(type_char_array);
+      unsigned int key = parse_header(secret_key_char_array);
+      cout << "Secret Key = " << key << endl;
 
-      cout << "Secret key = " << key << endl;
-      cout << "Type = " << type << endl;
+      if (key != stoi(argv[2])){
+        cout << "Invalid key" << endl;
+      }
+      else {
+        unsigned int type = parse_header(type_char_array);
+        cout << "Request Type = " << type << endl;
 
-      switch(type){
-        case 0: get(buf, connfd); break;
-        case 1: break;
-        case 2: break;
-        case 3: break;
+        switch(type){
+          case 0: get(buf, connfd); break;
+          case 1: break;
+          case 2: break;
+          case 3: break;
+        }
       }
 
       Close(connfd);
@@ -113,8 +119,7 @@ unsigned int parse_header(char client_message[]){
   return header;
 }
 
-void get(char buf[], int connfd){
-  char filename[80] = {0};
+void parse_filename(char buf[], char filename[]){
   for (int i = 8; i < 88; i++){
     if (buf[i] == '\0'){
       break;
@@ -122,16 +127,39 @@ void get(char buf[], int connfd){
     filename[i-8] = buf[i];
   }
   cout << "Filename = " << filename << endl;
+}
+
+void get(char buf[], int connfd){
+
+  char filename[80] = {0};
+  parse_filename(buf, filename);
 
   ifstream in_file;
   in_file.open(filename);
 
-  char return_buf[MAXLINE], c;
-  int index = 0;
+  char c, return_buf[MAXLINE] = {0};
+  unsigned int index = 8;
   while (in_file.get(c)){
     return_buf[index] = c;
     index += 1;
   }
+
+  // change the below lines if there is an error
+  return_buf[0] = 0;
+  return_buf[1] = 0;
+  return_buf[2] = 0;
+  return_buf[3] = 0;
+
+  return_buf[4] = index & 0xff;
+  return_buf[5] = (index >> 8) & 0xff;
+  return_buf[6] = (index >> 16) & 0xff;
+  return_buf[7] = (index >> 24) & 0xff;
+
+  // cout << "Index = " << index << endl;
+  // cout << "Byte 1 = " << (unsigned int)return_buf[4] << endl;
+  // cout << "Byte 2 = " << (unsigned int)return_buf[5] << endl;
+  // cout << "Byte 3 = " << (unsigned int)return_buf[6] << endl;
+  // cout << "Byte 4 = " << (unsigned int)return_buf[7] << endl;
 
   in_file.close();
   Rio_writen(connfd, return_buf, MAXLINE);
