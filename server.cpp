@@ -9,10 +9,22 @@ extern "C" {
 
 using namespace std;
 
-unsigned int parse_header(char client_message[]);
+// function declarations
+unsigned int convert_header_to_host_order(char client_message[]);
 void get(char buf[], int connfd);
 void parse_filename(char buf[], char filename[]);
 
+/*
+  function: main()
+  inputs:
+    port number
+    secret key
+  purpose:
+    accept TCP connection from server
+    read data from client connection
+    parse data based on MyCloud Protocol
+    respond to client request
+*/
 int main(int argc, char* argv[]){
 
   // TODO:
@@ -43,20 +55,30 @@ int main(int argc, char* argv[]){
     //       Rio_writen() --> command not recognized
     //   Close()
 
+    // socket data
     int listenfd, connfd, port;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
     struct hostent *hp;
     char *haddrp;
+
+    // check for argument count
     if (argc != 3) {
     	fprintf(stderr, "usage: %s <port> <key>\n", argv[0]);
     	exit(0);
     }
+
+    // user defined port
     port = atoi(argv[1]);
 
+    // open connection on user defined port
     listenfd = Open_listenfd(port);
+
+    // loop until user enters Ctrl-C to quit
     while (1){
+
       clientlen = sizeof(clientaddr);
+      // accept connection with client
       connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
 
       /* Determine the domain name and IP address of the client */
@@ -65,33 +87,41 @@ int main(int argc, char* argv[]){
       haddrp = inet_ntoa(clientaddr.sin_addr);
       printf("server connected to %s (%s)\n", hp->h_name, haddrp);
 
+      // data required to start reading from client
       size_t n;
       char buf[MAXLINE] = {0};
       rio_t rio;
       Rio_readinitb(&rio, connfd);
 
+      // read from client connection
       n = Rio_readnb(&rio, buf, MAXLINE);
 
+      // assign secret key to local variable
       char secret_key_char_array[4];
       for (int i = 0; i < 4; i++){
         secret_key_char_array[i] = buf[i];
       }
 
+      // assign type to local variable
       char type_char_array[4];
       for (int i = 0; i < 4; i++){
         type_char_array[i] = buf[4+i];
       }
 
-      unsigned int key = parse_header(secret_key_char_array);
+      // call function to convert header to little endian order
+      unsigned int key = convert_header_to_host_order(secret_key_char_array);
       cout << "Secret Key = " << key << endl;
 
+      // check if client key matches the server secret key
       if (key != stoi(argv[2])){
-        cout << "Invalid key" << endl;
+        cout << "Invalid key" << endl; // case where the keys do not match
       }
       else {
-        unsigned int type = parse_header(type_char_array);
+        // convert the type to little endian order
+        unsigned int type = convert_header_to_host_order(type_char_array);
         cout << "Request Type = " << type << endl;
 
+        // switch statement to call function based on client specified type
         switch(type){
           case 0: get(buf, connfd); break;
           case 1: break;
@@ -107,9 +137,17 @@ int main(int argc, char* argv[]){
 
 }
 
-unsigned int parse_header(char client_message[]){
+/*
+  function convert_header_to_host_order()
+  inputs:
+    char array of 4 bytes
+  purpose:
+    convert char array of 4 bytes from network to host order
+*/
+unsigned int convert_header_to_host_order(char client_message[]){
+  // local variables
   unsigned int byte1, byte2, byte3, byte4;
-  byte1 = (unsigned char)client_message[3] << 24;
+  byte1 = (unsigned char)client_message[3] << 24; // bit level operations
   byte2 = (unsigned char)client_message[2] << 16;
   byte3 = (unsigned char)client_message[1] << 8;
   byte4 = (unsigned char)client_message[0];
@@ -119,9 +157,18 @@ unsigned int parse_header(char client_message[]){
   return header;
 }
 
+/*
+  function parse_filename()
+  inputs:
+    buffer of data from client
+    empty char array to store filename
+  purpose:
+    extract filename from buffer read from client
+*/
 void parse_filename(char buf[], char filename[]){
+  // note the filename begins at byte number 9 (i = 8)
   for (int i = 8; i < 88; i++){
-    if (buf[i] == '\0'){
+    if (buf[i] == '\0'){ // case where the end of the file is found
       break;
     }
     filename[i-8] = buf[i];
@@ -129,14 +176,26 @@ void parse_filename(char buf[], char filename[]){
   cout << "Filename = " << filename << endl;
 }
 
+/*
+  function get()
+  inputs:
+    buffer of data from client
+    client connection file descriptor
+  purpose:
+    read a file
+    send file data back to client
+*/
 void get(char buf[], int connfd){
 
+  // get filename from buffer
   char filename[80] = {0};
   parse_filename(buf, filename);
 
+  // open the file
   ifstream in_file;
   in_file.open(filename);
 
+  // read the data from the file
   char c, return_buf[MAXLINE] = {0};
   unsigned int index = 8;
   while (in_file.get(c)){
@@ -144,23 +203,27 @@ void get(char buf[], int connfd){
     index += 1;
   }
 
+  // TODO
   // change the below lines if there is an error
   return_buf[0] = 0;
   return_buf[1] = 0;
   return_buf[2] = 0;
   return_buf[3] = 0;
 
+  // bytes 4-8 are the file size (number of bytes)
   return_buf[4] = index & 0xff;
   return_buf[5] = (index >> 8) & 0xff;
   return_buf[6] = (index >> 16) & 0xff;
   return_buf[7] = (index >> 24) & 0xff;
 
+  // UNCOMMENT TO CHECK FILE SIZE -- WAS EXPERIENCING ERRORS
   // cout << "Index = " << index << endl;
   // cout << "Byte 1 = " << (unsigned int)return_buf[4] << endl;
   // cout << "Byte 2 = " << (unsigned int)return_buf[5] << endl;
   // cout << "Byte 3 = " << (unsigned int)return_buf[6] << endl;
   // cout << "Byte 4 = " << (unsigned int)return_buf[7] << endl;
 
+  // close the file and write to the client
   in_file.close();
   Rio_writen(connfd, return_buf, MAXLINE);
 
