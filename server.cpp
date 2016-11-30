@@ -4,11 +4,13 @@ extern "C" {
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
+#include <fstream>
+#include <vector>
 
 using namespace std;
 
 unsigned int parse_header(char client_message[]);
-void get(rio_t rio);
+void get(char buf[], int connfd);
 
 int main(int argc, char* argv[]){
 
@@ -67,22 +69,26 @@ int main(int argc, char* argv[]){
       rio_t rio;
       Rio_readinitb(&rio, connfd);
 
-      n = Rio_readnb(&rio, buf, 4);
-      unsigned int secret_key = parse_header(buf);
-      cout << "Secret key = " << secret_key << endl;
+      n = Rio_readnb(&rio, buf, MAXLINE);
 
-      // for (int i = 0; i < 20; i++){
-      //   cout << "rio buf = " << rio.rio_buf[i] << endl;
-      // }
+      char key_char_array[4];
+      for (int i = 0; i < 4; i++){
+        key_char_array[i] = buf[i];
+      }
 
-      rio.rio_cnt = 4;
-      n = Rio_readnb(&rio, buf, 4);
-      unsigned int type = parse_header(buf);
+      char type_char_array[4];
+      for (int i = 0; i < 4; i++){
+        type_char_array[i] = buf[4+i];
+      }
+
+      unsigned int key = parse_header(key_char_array);
+      unsigned int type = parse_header(type_char_array);
+
+      cout << "Secret key = " << key << endl;
       cout << "Type = " << type << endl;
 
-      rio.rio_cnt = 8;
       switch(type){
-        case 0: get(rio); break;
+        case 0: get(buf, connfd); break;
         case 1: break;
         case 2: break;
         case 3: break;
@@ -107,19 +113,27 @@ unsigned int parse_header(char client_message[]){
   return header;
 }
 
-void get(rio_t rio){
-  char buf[80];
-  size_t n;
-  n = Rio_readnb(&rio, buf, 80);
-  char filename[80];
-  for (int i = 0; i < 80; i++){
+void get(char buf[], int connfd){
+  char filename[80] = {0};
+  for (int i = 8; i < 88; i++){
     if (buf[i] == '\0'){
       break;
     }
-    cout << "Buf = " << buf[i] << endl;
-    filename[i] = buf[i];
+    filename[i-8] = buf[i];
   }
   cout << "Filename = " << filename << endl;
-  // TODO
-    // next open the file and write it back
+
+  ifstream in_file;
+  in_file.open(filename);
+
+  char return_buf[MAXLINE], c;
+  int index = 0;
+  while (in_file.get(c)){
+    return_buf[index] = c;
+    index += 1;
+  }
+
+  in_file.close();
+  Rio_writen(connfd, return_buf, MAXLINE);
+
 }

@@ -27,19 +27,14 @@ int main(int argc, char* argv[]){
   char protocol_buf[80] = {0};
   convert_to_protocol_format(protocol_buf, secret_key, type, filename);
 
-  for (int i = 0; i < 87; i++){
-    cout << "protocol_buf = " << protocol_buf[i] << endl;
-  }
-
   clientfd = Open_clientfd(host, port);
   Rio_readinitb(&rio, clientfd);
 
-  Rio_writen(clientfd, protocol_buf, strlen(buf));
+  Rio_writen(clientfd, protocol_buf, MAXLINE);
 
-  // Rio_readnb(&rio, buf, MAXLINE);
-  // Fputs(buf, stdout);
-  //
-  // cout << buf << endl;
+  Rio_readnb(&rio, buf, MAXLINE);
+  Fputs(buf, stdout);
+
   Close(clientfd); //line:netp:echoclient:close
   exit(0);
 }
