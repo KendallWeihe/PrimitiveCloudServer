@@ -223,7 +223,6 @@ void get(char buf[], int connfd){
   }
 
   if (!file_exists){
-    cout << "File not found\n";
     error = -1;
   }
 
@@ -248,10 +247,10 @@ void get(char buf[], int connfd){
   return_buf[3] = 0;
 
   // bytes 4-8 are the file size (number of bytes)
-  return_buf[4] = index & 0xff;
-  return_buf[5] = (index >> 8) & 0xff;
-  return_buf[6] = (index >> 16) & 0xff;
-  return_buf[7] = (index >> 24) & 0xff;
+  return_buf[4] = (index - 8) & 0xff;
+  return_buf[5] = ((index - 8) >> 8) & 0xff;
+  return_buf[6] = ((index - 8) >> 16) & 0xff;
+  return_buf[7] = ((index - 8) >> 24) & 0xff;
 
   // UNCOMMENT TO CHECK FILE SIZE
   // cout << "Index = " << index << endl;
@@ -260,7 +259,7 @@ void get(char buf[], int connfd){
   // cout << "Byte 3 = " << (unsigned int)return_buf[6] << endl;
   // cout << "Byte 4 = " << (unsigned int)return_buf[7] << endl;
 
-  const unsigned int BUF_LENGTH = 8 + index;
+  const unsigned int BUF_LENGTH = index;
   Rio_writen(connfd, return_buf, BUF_LENGTH);
 
 }
@@ -353,7 +352,38 @@ void del(char buf[], int connfd) {
 }
 
 void list(char buf[], int connfd) {
+  string file_list = ""; // Holds the list of files
+  for( int i = 0; i < file_names.size(); i++ ) {
+    file_list += file_names[i] + endl;
+  }
 
+  char return_buf[MAXLINE] = {0};
+  unsigned int index;
+  for (index = 8; index < file_list.length()+8; index++){
+    return_buf[index] = file_list[index-8];
+  }
+
+  // error bytes
+  if (rio_error_check < 0){
+    return_buf[0] = -1;
+    cout << "Operation status = error" << endl;
+  }
+  else{
+    return_buf[0] = 0;
+    cout << "Operation status = success" << endl;
+  }
+  return_buf[1] = 0;
+  return_buf[2] = 0;
+  return_buf[3] = 0;
+
+  // bytes 4-8 are the file size (number of bytes)
+  return_buf[4] = (index - 8) & 0xff;
+  return_buf[5] = ((index - 8) >> 8) & 0xff;
+  return_buf[6] = ((index - 8) >> 16) & 0xff;
+  return_buf[7] = ((index - 8) >> 24) & 0xff;
+
+  const unsigned int BUF_LENGTH = index;
+  Rio_writen(connfd, return_buf, BUF_LENGTH);
 }
 
 int search(vector<string> vec, string toFind) {
