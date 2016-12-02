@@ -13,7 +13,7 @@ csapp.o: csapp.h csapp.c
 	gcc $(CPPFLAGS) -c csapp.c
 
 server: server.cpp csapp.o
-	g++ $(CPPFLAGS) server.cpp csapp.o -lpthread -o server
+	g++ --std=c++11 $(CPPFLAGS) server.cpp csapp.o -lpthread -o server
 
 mcput: mcput.cpp csapp.o
 	g++ $(CPPFLAGS) mcput.cpp csapp.o -lpthread -o mcput
