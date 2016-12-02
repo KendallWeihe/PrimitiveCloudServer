@@ -13,6 +13,7 @@ using namespace std;
 unsigned int convert_header_to_host_order(char client_message[]);
 void get(char buf[], int connfd);
 void put(char buf[], int connfd);
+int del(char buf[], int connfd);
 void parse_filename(char buf[], char filename[]);
 void parse_filedata(char buf[], char filename[]);
 int search(vector<string>, string);
@@ -131,7 +132,7 @@ int main(int argc, char* argv[]){
         switch(type){
           case 0: get(buf, connfd); break;
           case 1: put(buf, connfd); break;
-          case 2: break;
+          case 2: del(buf, connfd); break;
           case 3: break;
         }
       }
@@ -266,6 +267,15 @@ void get(char buf[], int connfd){
 
 }
 
+/*
+  function put()
+  inputs:
+    buffer of data from client
+    client connection file descriptor
+  purpose:
+    store a file
+    send confirmation back to client
+*/
 void put(char buf[], int connfd){
 
   // get filename from buffer
@@ -298,9 +308,12 @@ void put(char buf[], int connfd){
   // write to the client
   Rio_writen(connfd, return_buf, MAXLINE);
 
+  cout << "Operation status = success" << endl;
 }
 
+int del(char buf[], int connfd) {
 
+}
 
 int search(vector<string> vec, string toFind) {
 	for (int i = 0; i < vec.size(); i++) {
