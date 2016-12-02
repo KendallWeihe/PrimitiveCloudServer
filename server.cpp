@@ -13,7 +13,7 @@ using namespace std;
 unsigned int convert_header_to_host_order(char client_message[]);
 void get(char buf[], int connfd);
 void put(char buf[], int connfd);
-int del(char buf[], int connfd);
+void del(char buf[], int connfd);
 void parse_filename(char buf[], char filename[]);
 void parse_filedata(char buf[], char filename[]);
 int search(vector<string>, string);
@@ -314,8 +314,15 @@ void put(char buf[], int connfd){
   cout << "Operation status = success" << endl;
 }
 
-int del(char buf[], int connfd) {
-
+void del(char buf[], int connfd) {
+  int index = search( file_names, fname ); // check if the file exists
+  if( index != -1 ) { // If it does, delete it
+    file_names.erase(file_names.begin() + index);
+    file_data.erase(file_data.begin() + index);
+  }
+  else { // If the file is not stored in the server
+    
+  }
 }
 
 int search(vector<string> vec, string toFind) {
