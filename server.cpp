@@ -278,7 +278,7 @@ void put(char buf[], int connfd){
   string fdata(data);
 
   int index = search( file_names, fname ); // check if the file already exists
-  if( index != -1 ) { // If it has, update it.
+  if( index != -1 ) { // If it does, update it.
     file_data[index] = fdata;
   }
   else { // If not, add the new variable and value.

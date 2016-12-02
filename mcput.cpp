@@ -49,14 +49,10 @@ int main(int argc, char* argv[]){
   string filename = argv[4];
   char protocol_buf[80] = {0};
 
-   // open the file
-  ifstream in_file;
-  in_file.open(filename);
-
   // read the data from the file
   char c, return_buf[MAXLINE] = {0};
   unsigned int index = 0;
-  while (in_file.get(c)){
+  while (cin.get(c)){
     return_buf[index] = c;
     index += 1;
   }
