@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
   // Fputs(buf, stdout);
 
   // check for error
-  unsigned int error_check = parse_error(buf);
+  int error_check = parse_error(buf);
   // cout << "Error = " << error_check << endl;
   if (error_check < 0){
     cout << "There was an error from the server" << endl;
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
   // cout << "Num bytes = " << num_bytes << endl;
 
   // output the file from the buffer
-  for (int i = 0; i < num_bytes; i++){
+  for (unsigned int i = 0; i < num_bytes; i++){
     cout << buf[i+8];
   }
 
@@ -105,7 +105,7 @@ void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, un
   protocol_buf[7] = htonl(type) & 0xff;
 
   // bytes 8-87 are the filename -- null terminated
-  for (int i = 8; i < filename.length()+8; i++){
+  for (unsigned int i = 8; i < filename.length()+8; i++){
     protocol_buf[i] = filename[i-8];
   }
 

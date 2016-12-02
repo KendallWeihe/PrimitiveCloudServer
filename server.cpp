@@ -20,6 +20,7 @@ int search(vector<string>, string);
 
 vector<string> file_names;
 vector<string> file_data;
+int rio_error_check = 0;
 
 /*
   function: main()
@@ -77,6 +78,7 @@ int main(int argc, char* argv[]){
 
       if (n < 0){
         cout << "Error in reading from client" << endl;
+        rio_error_check = -1;
       }
 
       // assign secret key to local variable
@@ -227,9 +229,13 @@ void get(char buf[], int connfd){
     return_buf[index] = file[index-8];
   }
 
-  // TODO
-  // change the below lines if there is an error
-  return_buf[0] = (unsigned char)error;
+  // error bytes
+  if (error < 0 || rio_error_check < 0){
+    return_buf[0] = -1;
+  }
+  else{
+    return_buf[0] = 0;
+  }
   return_buf[1] = 0;
   return_buf[2] = 0;
   return_buf[3] = 0;
@@ -283,8 +289,13 @@ void put(char buf[], int connfd){
   // read the data from the file
   char return_buf[MAXLINE] = {0};
 
-  // change the below lines if there is an error
-  return_buf[0] = 0;
+  // error bytes
+  if (rio_error_check < 0){
+    return_buf[0] = -1;
+  }
+  else{
+    return_buf[0] = 0;
+  }
   return_buf[1] = 0;
   return_buf[2] = 0;
   return_buf[3] = 0;
