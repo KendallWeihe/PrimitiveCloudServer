@@ -9,7 +9,7 @@ extern "C" {
 using namespace std;
 
 // function prototypes
-void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type, string filename, char return_buf, unsigned int index);
+void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type, string filename, char return_buf[], unsigned int index);
 unsigned int parse_error(char buf[]);
 unsigned int parse_num_bytes(char buf[]);
 
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]){
   purpose:
     convert the GET request to the MyCloud Protocol form
 */
-void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type, string filename, char return_buf, unsigned int index){
+void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type, string filename, char return_buf[], unsigned int index){
 
   // bytes 0-3 are the secret key in network order
   protocol_buf[0] = htonl(secret_key) >> 24;
