@@ -21,6 +21,8 @@ int search(vector<string>, string);
 vector<string> file_names;
 vector<string> file_data;
 int rio_error_check = 0;
+const int PUT_REPLY_LEN = 4;
+const int DELETE_REPLY_LEN = 4;
 
 /*
   function: main()
@@ -232,9 +234,11 @@ void get(char buf[], int connfd){
   // error bytes
   if (error < 0 || rio_error_check < 0){
     return_buf[0] = -1;
+    cout << "Operation status = error" << endl;
   }
   else{
     return_buf[0] = 0;
+    cout << "Operation status = success" << endl;
   }
   return_buf[1] = 0;
   return_buf[2] = 0;
@@ -286,8 +290,8 @@ void put(char buf[], int connfd){
     file_data.push_back(fdata);
   }
 
-  // read the data from the file
-  char return_buf[MAXLINE] = {0};
+  // assemble the return message
+  char return_buf[PUT_REPLY_LEN] = {0};
 
   // error bytes
   if (rio_error_check < 0){
@@ -301,20 +305,45 @@ void put(char buf[], int connfd){
   return_buf[3] = 0;
 
   // write to the client
-  Rio_writen(connfd, return_buf, MAXLINE);
+  Rio_writen(connfd, return_buf, PUT_REPLY_LEN);
 
   cout << "Operation status = success" << endl;
 }
 
 void del(char buf[], int connfd) {
+  char filename[80] = {0};
+  parse_filename(buf, filename);
+  string fname(filename); // convert to string
+
   int index = search( file_names, fname ); // check if the file exists
   if( index != -1 ) { // If it does, delete it
     file_names.erase(file_names.begin() + index);
     file_data.erase(file_data.begin() + index);
+    rio_error_check = 0;
+    cout << "Operation status = success" << endl;
   }
   else { // If the file is not stored in the server
-    
+    rio_error_check = -1;
+    cout << "Operation status = error" << endl;
   }
+
+  // assemble the return message
+  char return_buf[DELETE_REPLY_LEN] = {0};
+
+  // error bytes
+  if (rio_error_check < 0){
+    return_buf[0] = -1;
+  }
+  else{
+    return_buf[0] = 0;
+  }
+  return_buf[1] = 0;
+  return_buf[2] = 0;
+  return_buf[3] = 0;
+
+  // write to the client
+  Rio_writen(connfd, return_buf, DELETE_REPLY_LEN);
+
 }
 
 int search(vector<string> vec, string toFind) {
