@@ -82,7 +82,7 @@ int main(int argc, char* argv[]){
 
   // read the file from the buffer
   char file_buf[num_bytes];
-  for (int i = 0; i < num_bytes; i++){
+  for (unsigned int i = 0; i < num_bytes; i++){
     file_buf[i] = buf[i+8];
   }
 
@@ -122,7 +122,7 @@ void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, un
   protocol_buf[7] = htonl(type) & 0xff;
 
   // bytes 8-87 are the filename -- null terminated
-  for (int i = 8; i < filename.length()+8; i++){
+  for (unsigned int i = 8; i < filename.length()+8; i++){
     protocol_buf[i] = filename[i-8];
   }
 
@@ -133,7 +133,7 @@ void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, un
   protocol_buf[91] = htonl(index) & 0xff;
 
   // bytes 92-92+index are the file
-  for( int i = 92; i < index + 92; i++ ) {
+  for(unsigned int i = 92; i < index + 92; i++ ) {
       protocol_buf[i] = return_buf[i-92];
   }
 
