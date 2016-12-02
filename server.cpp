@@ -20,6 +20,7 @@ int search(vector<string>, string);
 
 vector<string> file_names;
 vector<string> file_data;
+int rio_error_check = 0;
 
 /*
   function: main()
@@ -67,13 +68,18 @@ int main(int argc, char* argv[]){
       printf("server connected to %s (%s)\n", hp->h_name, haddrp);
 
       // data required to start reading from client
-      size_t n;
       char buf[MAXLINE] = {0};
       rio_t rio;
+      size_t n;
       Rio_readinitb(&rio, connfd);
 
       // read from client connection
       n = Rio_readnb(&rio, buf, MAXLINE);
+
+      if (n < 0){
+        cout << "Error in reading from client" << endl;
+        rio_error_check = -1;
+      }
 
       // assign secret key to local variable
       char secret_key_char_array[4];
@@ -92,7 +98,7 @@ int main(int argc, char* argv[]){
       cout << "Secret Key = " << key << endl;
 
       // check if client key matches the server secret key
-      if (key != stoi(argv[2])){
+      if (key != (unsigned int)stoi(argv[2])){
         cout << "Invalid key" << endl; // case where the keys do not match
       }
       else {
@@ -178,7 +184,7 @@ void parse_filedata(char buf[], char filedata[]){
   unsigned int file_length = a | b | c | d;
 
   // note the filedata begins at byte number 93 (i = 92)
-  for (int i = 92; i < 92 + file_length; i++){
+  for (unsigned int i = 92; i < 92 + file_length; i++){
     if (buf[i] == '\0'){ // case where the end of the file is found
       break;
     }
@@ -201,21 +207,35 @@ void get(char buf[], int connfd){
   char filename[80] = {0};
   parse_filename(buf, filename);
 
-  // open the file
-  ifstream in_file;
-  in_file.open(filename);
-
-  // read the data from the file
-  char c, return_buf[MAXLINE] = {0};
-  unsigned int index = 8;
-  while (in_file.get(c)){
-    return_buf[index] = c;
-    index += 1;
+  bool file_exists = false;
+  string file;
+  int error = 0;
+  for (unsigned int i = 0; i < file_names.size(); i++){
+    if (file_names[i] == filename){
+      file = file_data[i];
+      file_exists = true;
+    }
   }
 
-  // TODO
-  // change the below lines if there is an error
-  return_buf[0] = 0;
+  if (!file_exists){
+    cout << "File not found\n";
+    error = -1;
+  }
+
+  // read the data from the file
+  char return_buf[MAXLINE] = {0};
+  unsigned int index;
+  for (index = 8; index < file.length()+8; index++){
+    return_buf[index] = file[index-8];
+  }
+
+  // error bytes
+  if (error < 0 || rio_error_check < 0){
+    return_buf[0] = -1;
+  }
+  else{
+    return_buf[0] = 0;
+  }
   return_buf[1] = 0;
   return_buf[2] = 0;
   return_buf[3] = 0;
@@ -226,15 +246,13 @@ void get(char buf[], int connfd){
   return_buf[6] = (index >> 16) & 0xff;
   return_buf[7] = (index >> 24) & 0xff;
 
-  // UNCOMMENT TO CHECK FILE SIZE -- WAS EXPERIENCING ERRORS
+  // UNCOMMENT TO CHECK FILE SIZE
   // cout << "Index = " << index << endl;
   // cout << "Byte 1 = " << (unsigned int)return_buf[4] << endl;
   // cout << "Byte 2 = " << (unsigned int)return_buf[5] << endl;
   // cout << "Byte 3 = " << (unsigned int)return_buf[6] << endl;
   // cout << "Byte 4 = " << (unsigned int)return_buf[7] << endl;
 
-  // close the file and write to the client
-  in_file.close();
   Rio_writen(connfd, return_buf, MAXLINE);
 
 }
@@ -271,8 +289,13 @@ void put(char buf[], int connfd){
   // read the data from the file
   char return_buf[MAXLINE] = {0};
 
-  // change the below lines if there is an error
-  return_buf[0] = 0;
+  // error bytes
+  if (rio_error_check < 0){
+    return_buf[0] = -1;
+  }
+  else{
+    return_buf[0] = 0;
+  }
   return_buf[1] = 0;
   return_buf[2] = 0;
   return_buf[3] = 0;
@@ -295,7 +318,7 @@ void del(char buf[], int connfd) {
 }
 
 int search(vector<string> vec, string toFind) {
-	for (int i = 0; i < vec.size(); i++) {
+	for (unsigned int i = 0; i < vec.size(); i++) {
 		if (vec[i] == toFind) {
 			return i; // Return the position if it's found.
 		}
