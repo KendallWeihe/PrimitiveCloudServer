@@ -5,9 +5,12 @@ Authors:
 Brief description of project:
   The goal of this project was to develop a simple cloud server.
   The simple cloud server can store files, allowing the user to PUT files into the cloud, GET files from the cloud, DELETE files from the cloud, and LIST the current files in the cloud.
-  The example test runs of how the cloud server works are shown below in "Running and testing."
   The server uses a proprietary protocol known as the Mycloud Protocol (MCP)
   The connection between the client and server programs is handled through the RIO library function calls. The RIO library stands for Robust Input/Output library, and uses websockets to establish internet communication between the client and server.
+  How to use the cloud is shown below in "Running and testing."
+
+Special features or limitations:
+  This cloud does not store files to the local disk, so if the server crashes or exits then all files are lost.
 
 Running & testing:
   To compile the program: `make`
@@ -37,4 +40,10 @@ Running & testing:
     $ ./mcget localhost 3000 123 wrong_file_name.data
     $  There was an error from the server
 
-  
+  To delete a file from the cloud:
+    ./mcdel <host> <port> <secret_key> <file_name>
+    $ ./mcdel localhost 3000 123 testing_file.data
+
+  To list all the current files in the cloud:
+  ./mclist <host> <port> <secret_key>
+  $ ./mclist localhost 3000 123 
