@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
 
   // get the size of the file
   unsigned int num_bytes = parse_num_bytes(buf);
-  cout << "Num bytes = " << num_bytes << endl;
+  // cout << "Num bytes = " << num_bytes << endl;
 
   // read the file from the buffer
   char file_buf[num_bytes];
