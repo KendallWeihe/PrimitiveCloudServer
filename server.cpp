@@ -228,7 +228,12 @@ void get(char buf[], int connfd){
 
   // TODO
   // change the below lines if there is an error
-  return_buf[0] = (unsigned char)error;
+  if (error == 0){
+    return_buf[0] = 0;
+  }
+  else{
+    return_buf[0] = -1;    
+  }
   return_buf[1] = 0;
   return_buf[2] = 0;
   return_buf[3] = 0;
