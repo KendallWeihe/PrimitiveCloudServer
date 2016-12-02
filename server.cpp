@@ -314,7 +314,6 @@ void put(char buf[], int connfd){
   // write to the client
   Rio_writen(connfd, return_buf, PUT_REPLY_LEN);
 
-  cout << "Operation status = success" << endl;
 }
 
 void del(char buf[], int connfd) {
@@ -327,11 +326,11 @@ void del(char buf[], int connfd) {
     file_names.erase(file_names.begin() + index);
     file_data.erase(file_data.begin() + index);
     rio_error_check = 0;
-    cout << "Operation status = success" << endl;
+    cout << "Operation Status = success" << endl;
   }
   else { // If the file is not stored in the server
     rio_error_check = -1;
-    cout << "Operation status = error" << endl;
+    cout << "Operation Status = error" << endl;
   }
 
   // assemble the return message
@@ -354,7 +353,7 @@ void del(char buf[], int connfd) {
 }
 
 void list(char buf[], int connfd) {
-  
+
 }
 
 int search(vector<string> vec, string toFind) {
