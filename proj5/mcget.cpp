@@ -9,7 +9,7 @@ extern "C" {
 using namespace std;
 
 // function prototypes
-void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type);
+void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type, string filename);
 unsigned int parse_error(char buf[]);
 unsigned int parse_num_bytes(char buf[]);
 
@@ -34,8 +34,8 @@ int main(int argc, char* argv[]){
   rio_t rio;
 
   // check for argument count
-  if (argc != 4) {
-    fprintf(stderr, "usage: %s <host> <port> <key>\n", argv[0]);
+  if (argc != 5) {
+    fprintf(stderr, "usage: %s <host> <port> <key> <filename>\n", argv[0]);
     exit(0);
   }
 
@@ -45,9 +45,10 @@ int main(int argc, char* argv[]){
 
   // construct buffer that is consistent with MyCloud Protocol for a GET request
   unsigned int secret_key = atoi(argv[3]);
-  unsigned int type = 3;
+  unsigned int type = 0;
+  string filename = argv[4];
   char protocol_buf[80] = {0};
-  convert_to_protocol_format(protocol_buf, secret_key, type);
+  convert_to_protocol_format(protocol_buf, secret_key, type, filename);
 
   // connect to server
   clientfd = Open_clientfd(host, port);
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]){
   purpose:
     convert the GET request to the MyCloud Protocol form
 */
-void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type){
+void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, unsigned int type, string filename){
 
   // bytes 0-3 are the secret key in network order
   protocol_buf[0] = htonl(secret_key) >> 24;
@@ -102,6 +103,11 @@ void convert_to_protocol_format(char protocol_buf[], unsigned int secret_key, un
   protocol_buf[5] = (htonl(type) >> 16) & 0xff;
   protocol_buf[6] = (htonl(type) >> 8) & 0xff;
   protocol_buf[7] = htonl(type) & 0xff;
+
+  // bytes 8-87 are the filename -- null terminated
+  for (unsigned int i = 8; i < filename.length()+8; i++){
+    protocol_buf[i] = filename[i-8];
+  }
 
 }
 
