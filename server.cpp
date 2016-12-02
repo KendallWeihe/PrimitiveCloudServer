@@ -33,34 +33,6 @@ vector<string> file_data;
 */
 int main(int argc, char* argv[]){
 
-  // TODO:
-    // check for correct arguments
-    // Open_listenfd()
-    // while(1)
-    //   Accept()
-    //   Gethostbyaddr()
-    //   Rio_readinitb()
-    //   Rio_readnb()
-    //   process data:
-    //     determine type of request
-    //     if put:
-    //       save to file
-    //       Rio_writen() --> response?
-    //     else if get:
-    //       open file
-    //       read file
-    //       Rio_writen() --> file unfo
-    //     else if del:
-    //       execve("rm file.data")
-    //       Rio_writen() --> response?
-    //     else if list:
-    //       execve("ls")
-    //       capture output
-    //       Rio_writen() --> output from "ls"
-    //     else:
-    //       Rio_writen() --> command not recognized
-    //   Close()
-
     // socket data
     int listenfd, connfd, port;
     socklen_t clientlen;
@@ -203,7 +175,7 @@ void parse_filedata(char buf[], char filedata[]){
   unsigned int d = (unsigned int)byte_4;
 
   unsigned int file_length = a | b | c | d;
-  
+
   // note the filedata begins at byte number 93 (i = 92)
   for (int i = 92; i < 92 + file_length; i++){
     if (buf[i] == '\0'){ // case where the end of the file is found
