@@ -14,6 +14,7 @@ unsigned int convert_header_to_host_order(char client_message[]);
 void get(char buf[], int connfd);
 void put(char buf[], int connfd);
 void del(char buf[], int connfd);
+void list(char buf[], int connfd);
 void parse_filename(char buf[], char filename[]);
 void parse_filedata(char buf[], char filename[]);
 int search(vector<string>, string);
@@ -113,7 +114,7 @@ int main(int argc, char* argv[]){
           case 0: get(buf, connfd); break;
           case 1: put(buf, connfd); break;
           case 2: del(buf, connfd); break;
-          case 3: break;
+          case 3: list(buf, connfd); break;
         }
       }
 
@@ -350,6 +351,10 @@ void del(char buf[], int connfd) {
   // write to the client
   Rio_writen(connfd, return_buf, DELETE_REPLY_LEN);
 
+}
+
+void list(char buf[], int connfd) {
+  
 }
 
 int search(vector<string> vec, string toFind) {
