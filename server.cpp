@@ -115,6 +115,8 @@ int main(int argc, char* argv[]){
         }
       }
 
+      cout << "--------------------------" << endl;
+
       Close(connfd);
     }
 
@@ -232,9 +234,12 @@ void get(char buf[], int connfd){
   // error bytes
   if (error < 0 || rio_error_check < 0){
     return_buf[0] = -1;
+    rio_error_check = 0;
+    cout << "Operation Status = error\n";
   }
   else{
     return_buf[0] = 0;
+    cout << "Operation Status = success\n";
   }
   return_buf[1] = 0;
   return_buf[2] = 0;
@@ -292,9 +297,12 @@ void put(char buf[], int connfd){
   // error bytes
   if (rio_error_check < 0){
     return_buf[0] = -1;
+    rio_error_check = 0;
+    cout << "Operation Status = error\n";
   }
   else{
     return_buf[0] = 0;
+    cout << "Operation Status = success\n";
   }
   return_buf[1] = 0;
   return_buf[2] = 0;
