@@ -12,7 +12,13 @@ using namespace std;
 // function declarations
 unsigned int convert_header_to_host_order(char client_message[]);
 void get(char buf[], int connfd);
+void put(char buf[], int connfd);
 void parse_filename(char buf[], char filename[]);
+void parse_filedata(char buf[], char filename[]);
+int search(vector<string>, string);
+
+vector<string> file_names;
+vector<string> file_data;
 
 /*
   function: main()
@@ -124,7 +130,7 @@ int main(int argc, char* argv[]){
         // switch statement to call function based on client specified type
         switch(type){
           case 0: get(buf, connfd); break;
-          case 1: break;
+          case 1: put(buf, connfd); break;
           case 2: break;
           case 3: break;
         }
@@ -174,6 +180,37 @@ void parse_filename(char buf[], char filename[]){
     filename[i-8] = buf[i];
   }
   cout << "Filename = " << filename << endl;
+}
+
+/*
+  function parse_filedata()
+  inputs:
+    buffer of data from client
+    empty char array to store file data
+  purpose:
+    extract file data from buffer read from client
+*/
+void parse_filedata(char buf[], char filedata[]){
+  // the length of the file starts at 88 and ends at 91
+  unsigned char byte_1 = buf[91];
+  unsigned char byte_2 = buf[90];
+  unsigned char byte_3 = buf[89];
+  unsigned char byte_4 = buf[88];
+
+  unsigned int a = (unsigned int)byte_1 << 24; // bit level operations
+  unsigned int b = (unsigned int)byte_2 << 16;
+  unsigned int c = (unsigned int)byte_3 << 8;
+  unsigned int d = (unsigned int)byte_4;
+
+  unsigned int file_length = a | b | c | d;
+  
+  // note the filedata begins at byte number 93 (i = 92)
+  for (int i = 92; i < 92 + file_length; i++){
+    if (buf[i] == '\0'){ // case where the end of the file is found
+      break;
+    }
+    filedata[i-92] = buf[i];
+  }
 }
 
 /*
@@ -227,4 +264,49 @@ void get(char buf[], int connfd){
   in_file.close();
   Rio_writen(connfd, return_buf, MAXLINE);
 
+}
+
+void put(char buf[], int connfd){
+
+  // get filename from buffer
+  char filename[80] = {0};
+  parse_filename(buf, filename);
+  string fname(filename); // convert to string
+
+  char data[MAXLINE] = {0};
+  parse_filedata(buf, data);
+  string fdata(data);
+
+  int index = search( file_names, fname ); // check if the file already exists
+  if( index != -1 ) { // If it has, update it.
+    file_data[index] = fdata;
+  }
+  else { // If not, add the new variable and value.
+    file_names.push_back(fname);
+    file_data.push_back(fdata);
+  }
+
+  // read the data from the file
+  char return_buf[MAXLINE] = {0};
+
+  // change the below lines if there is an error
+  return_buf[0] = 0;
+  return_buf[1] = 0;
+  return_buf[2] = 0;
+  return_buf[3] = 0;
+
+  // write to the client
+  Rio_writen(connfd, return_buf, MAXLINE);
+
+}
+
+
+
+int search(vector<string> vec, string toFind) {
+	for (int i = 0; i < vec.size(); i++) {
+		if (vec[i] == toFind) {
+			return i; // Return the position if it's found.
+		}
+	}
+	return -1; // If not found, return -1.
 }
