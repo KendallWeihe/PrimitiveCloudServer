@@ -259,7 +259,8 @@ void get(char buf[], int connfd){
   // cout << "Byte 3 = " << (unsigned int)return_buf[6] << endl;
   // cout << "Byte 4 = " << (unsigned int)return_buf[7] << endl;
 
-  Rio_writen(connfd, return_buf, MAXLINE);
+  const unsigned int BUF_LENGTH = 8 + index;
+  Rio_writen(connfd, return_buf, BUF_LENGTH);
 
 }
 
