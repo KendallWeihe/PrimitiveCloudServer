@@ -71,18 +71,10 @@ int main(int argc, char* argv[]){
   unsigned int num_bytes = parse_num_bytes(buf);
   cout << "Num bytes = " << num_bytes << endl;
 
-  // read the file from the buffer
-  char file_buf[num_bytes];
+  // output the file from the buffer
   for (int i = 0; i < num_bytes; i++){
-    file_buf[i] = buf[i+8];
+    cout << buf[i+8];
   }
-
-  // open output file, write, then close
-  ofstream out_file;
-  //TODO: change the filename to match the filename in arguments
-  out_file.open("testing.cpp");
-  out_file.write(file_buf, num_bytes);
-  out_file.close();
 
   Close(clientfd);
   exit(0);
